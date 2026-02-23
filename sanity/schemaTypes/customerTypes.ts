@@ -1,5 +1,5 @@
-import { defineField, defineType } from "sanity"
-import { UserIcon } from "@sanity/icons"
+import { UserIcon } from "@sanity/icons";
+import { defineField, defineType } from "sanity";
 
 export const customerType = defineType({
   name: "customer",
@@ -12,46 +12,41 @@ export const customerType = defineType({
   ],
   fields: [
     defineField({
-      name: "name",
-      title: "Name",
-      type: "string",
-      group: "details",
-      description: "Customer's full name",
-    }),
-    defineField({
       name: "email",
-      title: "Email",
       type: "string",
       group: "details",
       validation: (rule) => [rule.required().error("Email is required")],
     }),
     defineField({
-      name: "stripeCustomerId",
-      title: "Stripe Customer ID",
+      name: "name",
       type: "string",
-      group: "stripe",
-      description: " Stripe customer ID for payments",
-      readOnly: true,
-      validation: (rule) => [
-        rule.required().error("Stripe customer Id is required"),
-      ],
+      group: "details",
+      description: "Customer's full name",
     }),
     defineField({
       name: "clerkUserId",
-      title: "Clerk Customer ID",
       type: "string",
       group: "details",
       description: "Clerk user ID for authentication",
     }),
     defineField({
+      name: "stripeCustomerId",
+      type: "string",
+      group: "stripe",
+      readOnly: true,
+      description: "Stripe customer ID for payments",
+      validation: (rule) => [
+        rule.required().error("Stripe customer ID is required"),
+      ],
+    }),
+    defineField({
       name: "createdAt",
-      title: "Created date and time",
       type: "datetime",
       group: "details",
+      readOnly: true,
       initialValue: () => new Date().toISOString(),
     }),
   ],
-
   preview: {
     select: {
       email: "email",
@@ -62,9 +57,9 @@ export const customerType = defineType({
       return {
         title: name ?? email ?? "Unknown Customer",
         subtitle: stripeCustomerId
-          ? `${email ?? ""} - ${stripeCustomerId}`
+          ? `${email ?? ""} • ${stripeCustomerId}`
           : (email ?? ""),
-      }
+      };
     },
   },
   orderings: [
@@ -79,4 +74,4 @@ export const customerType = defineType({
       by: [{ field: "email", direction: "asc" }],
     },
   ],
-})
+});
