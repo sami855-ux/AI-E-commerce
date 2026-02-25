@@ -1,8 +1,13 @@
+import { CategoryTiles } from "@/components/LandingPage/CategoryTiles"
+import { FeaturedCarousel } from "@/components/LandingPage/FeaturedCarousel"
+import {  FeaturedCarouselSkeleton } from "@/components/LandingPage/FeaturedCarouselSkeleton"
+import { ProductSection } from "@/components/LandingPage/ProductSection"
 import { sanityFetch } from "@/sanity/lib/live"
 import { ALL_CATEGORIES_QUERY } from "@/sanity/queries/categories"
-import { FILTER_PRODUCTS_BY_NAME_QUERY, FILTER_PRODUCTS_BY_PRICE_ASC_QUERY } from "@/sanity/queries/products"
+import { FEATURED_PRODUCTS_QUERY, FILTER_PRODUCTS_BY_NAME_QUERY, FILTER_PRODUCTS_BY_PRICE_ASC_QUERY } from "@/sanity/queries/products"
 import { FILTER_PRODUCTS_BY_PRICE_DESC_QUERY } from "@/sanity/queries/products"
 import { FILTER_PRODUCTS_BY_RELEVANCE_QUERY } from "@/sanity/queries/products"
+import { Suspense } from "react"
 
 interface PageProps {
   searchParams: Promise<{
@@ -47,18 +52,62 @@ export default async function Home({ searchParams }: PageProps) {
         return FILTER_PRODUCTS_BY_NAME_QUERY;
     }
   };
-  const {data: catagories} = await sanityFetch({query: ALL_CATEGORIES_QUERY})
 
+  // Fetch products with filters (server-side via GROQ)
+  const { data: products } = await sanityFetch({
+    query: getQuery(),
+    params: {
+      searchQuery,
+      categorySlug,
+      color,
+      material,
+      minPrice,
+      maxPrice,
+      inStock,
+    },
+  });
+
+  // Fetch categories for filter sidebar
+  const { data: categories } = await sanityFetch({
+    query: ALL_CATEGORIES_QUERY,
+  });
+
+  // Fetch featured products for carousel
+  const { data: featuredProducts } = await sanityFetch({
+    query: FEATURED_PRODUCTS_QUERY,
+  });
 
   return (
-    <div className="">
+    <div className="font-geist">
       {/*Featured Prodcuts Carousole */}
+      <Suspense fallback={<FeaturedCarouselSkeleton/>}>
+        <FeaturedCarousel products={featuredProducts} />
+      </Suspense>
 
       {/* Page Banner */}
+     <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Shop {categorySlug ? categorySlug : "All Products"}
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Premium furniture for your home
+          </p>
+          </div>
+       </div>
 
       {/* Category Tiles */}
-
+      <div className="mt-6">
+        <CategoryTiles categories={categories} activeCategory={categorySlug || undefined} />
+      </div>
       {/*Products Section  */}
+       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <ProductSection
+          categories={categories}
+          products={products}
+          searchQuery={searchQuery}
+        />
+      </div>
     </div>
   )
 }
